@@ -1,0 +1,108 @@
+{
+  "identity": {
+    "name": "E1: The Anti-AI Designer",
+    "mission": "Create a Cyberpunk Command Center for Credit Card Management that feels like a Netrunner's Deck.",
+    "principles": [
+      "Fusion: Finance Security x Cyberpunk Rebellion",
+      "Emotion: Secretive, Powerful, Electric",
+      "Content: Data is the hero, treat it like encrypted intel",
+      "Contrast: Void Black vs. Neon Lasers"
+    ]
+  },
+  "typography": {
+    "primary_font": "Orbitron, sans-serif",
+    "secondary_font": "Share Tech Mono, monospace",
+    "import_instruction": "Add this to index.css: @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Share+Tech+Mono&display=swap');",
+    "usage": {
+      "headings": "font-orbitron tracking-widest uppercase",
+      "body": "font-mono text-sm tracking-wide",
+      "data_values": "font-mono text-neon-cyan shadow-neon"
+    }
+  },
+  "colors": {
+    "palette": {
+      "background": "#050505",
+      "surface": "#0a0a0f",
+      "surface_highlight": "#151520",
+      "primary": "#00f3ff",
+      "secondary": "#ff00ff",
+      "accent": "#fcee0a",
+      "text_primary": "#e0e0e0",
+      "text_muted": "#6b7280",
+      "border": "#1f2937"
+    },
+    "tailwind_config_extension": {
+      "colors": {
+        "cyber-black": "#050505",
+        "cyber-gray": "#0a0a0f",
+        "neon-cyan": "#00f3ff",
+        "neon-pink": "#ff00ff",
+        "neon-yellow": "#fcee0a"
+      },
+      "boxShadow": {
+        "neon-cyan": "0 0 5px #00f3ff, 0 0 10px #00f3ff",
+        "neon-pink": "0 0 5px #ff00ff, 0 0 10px #ff00ff",
+        "neon-yellow": "0 0 5px #fcee0a, 0 0 10px #fcee0a"
+      }
+    }
+  },
+  "visual_enhancers": {
+    "scanlines": {
+      "css": "background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2)); background-size: 100% 4px; pointer-events: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 50; opacity: 0.15;"
+    },
+    "glassmorphism": {
+      "classes": "bg-cyber-gray/80 backdrop-blur-md border border-white/10"
+    },
+    "glitch_effect": {
+      "instruction": "Use simple CSS keyframes for hover states on buttons to shift the background slightly."
+    }
+  },
+  "layout_strategy": {
+    "container": "max-w-7xl mx-auto p-6 md:p-12",
+    "grid_system": "grid grid-cols-1 md:grid-cols-12 gap-6",
+    "spacing": "Generous padding (p-6, p-8) inside containers to allow for 'breathing room' and glow effects."
+  },
+  "components": {
+    "CardList": {
+      "description": "A high-tech data grid. Not a standard table.",
+      "style": "border-collapse: separate; border-spacing: 0 8px;",
+      "row_style": "bg-cyber-gray border-l-2 border-transparent hover:border-neon-cyan transition-all duration-300 hover:shadow-neon-cyan hover:translate-x-1",
+      "header_style": "text-neon-cyan font-orbitron uppercase text-xs tracking-[0.2em]"
+    },
+    "CreditCard3D": {
+      "description": "The hero component. A realistic 3D flip card.",
+      "container_classes": "group perspective-[1000px] w-96 h-56 cursor-pointer",
+      "inner_classes": "relative w-full h-full transition-all duration-700 transform-style-3d group-hover:rotate-y-180",
+      "front_classes": "absolute w-full h-full backface-hidden bg-gradient-to-br from-gray-900 to-black border border-white/20 rounded-xl p-6 flex flex-col justify-between shadow-2xl",
+      "back_classes": "absolute w-full h-full backface-hidden rotate-y-180 bg-gradient-to-br from-gray-900 to-black border border-neon-pink/50 rounded-xl p-6 flex flex-col justify-center items-center shadow-neon-pink",
+      "assets": {
+        "chip": "Use a gold/silver gradient div for the chip.",
+        "logo": "Use a simple text logo or icon."
+      }
+    },
+    "ViewButton": {
+      "style": "bg-transparent border border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black font-orbitron uppercase tracking-widest transition-all duration-300 shadow-[0_0_10px_rgba(0,243,255,0.3)] hover:shadow-[0_0_20px_rgba(0,243,255,0.6)]"
+    }
+  },
+  "image_urls": {
+    "background_texture": "https://images.unsplash.com/photo-1561344640-2453889cde5b?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzR8MHwxfHNlYXJjaHw0fHxjeWJlcnB1bmslMjBjaXR5JTIwbmVvbiUyMG5pZ2h0JTIwYWJzdHJhY3QlMjB0ZWNobm9sb2d5fGVufDB8fHx8MTc2ODY5NDMzOXww&ixlib=rb-4.1.0&q=85",
+    "cyber_city": "https://images.unsplash.com/photo-1531113165519-5eb0816d7e02?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzR8MHwxfHNlYXJjaHwzfHxjeWJlcnB1bmslMjBjaXR5JTIwbmVvbiUyMG5pZ2h0JTIwYWJzdHJhY3QlMjB0ZWNobm9sb2d5fGVufDB8fHx8MTc2ODY5NDMzOXww&ixlib=rb-4.1.0&q=85"
+  },
+  "instructions_to_main_agent": [
+    "1. Install dependencies: `npm install framer-motion lucide-react` (or yarn add).",
+    "2. Update `tailwind.config.js` with the colors and box-shadows defined above.",
+    "3. Add the Google Fonts import to `index.css`.",
+    "4. Create a `Layout` component that includes the 'Scanlines' overlay.",
+    "5. Build the `CreditCard` component using the `preserve-3d` CSS technique. Ensure `backface-visibility: hidden` is used.",
+    "6. The 'View Card' action should open a Modal (Dialog) where the 3D card is displayed large and centered.",
+    "7. Use `lucide-react` icons: `CreditCard`, `Eye`, `Lock`, `Wifi` (for contactless symbol).",
+    "8. Ensure all text contrast meets accessibility standards (Neon on Black is usually good, but check thin fonts)."
+  ],
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "Do not use gradients for text unless it is a very large heading.",
+    "Avoid 'flat' design. Cyberpunk needs depth (glows, shadows, layers).",
+    "Use `data-testid` on all interactive elements.",
+    "Make sure the 'Flip' animation is smooth (0.6s - 0.8s).",
+    "The 'CVV' on the back should be clearly visible when flipped."
+  ]
+}
