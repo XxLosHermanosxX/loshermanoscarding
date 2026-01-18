@@ -31,6 +31,8 @@ class CardBase(BaseModel):
 class CardResponse(CardBase):
     model_config = ConfigDict(from_attributes=True)
     id: str
+    is_live: Optional[bool] = None
+    tested_at: Optional[str] = None
 
 class CardCreate(CardBase):
     pass
@@ -41,6 +43,12 @@ class CardUpdate(BaseModel):
     expiry_year: Optional[str] = None
     cvv: Optional[str] = None
     cardholder_name: Optional[str] = None
+    is_live: Optional[bool] = None
+    tested_at: Optional[str] = None
+
+class CardStatusUpdate(BaseModel):
+    is_live: Optional[bool] = None
+    tested_at: Optional[str] = None
 
 class BinInfo(BaseModel):
     scheme: Optional[str] = None
@@ -78,11 +86,64 @@ async def get_card(card_id: str):
         logging.error(f"Error fetching card {card_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@api_router.patch("/cards/{card_id}/status", response_model=CardResponse)
+async def update_card_status(card_id: str, status: CardStatusUpdate):
+    """Update card live status and tested_at field"""
+    try:
+        update_data = status.model_dump(exclude_unset=True)
+        if not update_data:
+            raise HTTPException(status_code=400, detail="No data to update")
+        
+        response = supabase.table('credit_card_transactions').update(update_data).eq('id', card_id).execute()
+        if not response.data:
+            raise HTTPException(status_code=404, detail="Card not found")
+        return response.data[0]
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Error updating card status {card_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/cards/duplicates")
+async def remove_duplicates():
+    """Remove duplicate cards based on card_number"""
+    try:
+        # Get all cards
+        response = supabase.table('credit_card_transactions').select('*').execute()
+        cards = response.data
+        
+        if not cards:
+            return {"message": "No cards found", "removed": 0}
+        
+        # Find duplicates (keep first occurrence)
+        seen = {}
+        duplicates_to_remove = []
+        
+        for card in cards:
+            card_number = card.get('card_number', '').replace(' ', '')
+            if card_number in seen:
+                duplicates_to_remove.append(card['id'])
+            else:
+                seen[card_number] = card['id']
+        
+        # Remove duplicates
+        removed_count = 0
+        for card_id in duplicates_to_remove:
+            try:
+                supabase.table('credit_card_transactions').delete().eq('id', card_id).execute()
+                removed_count += 1
+            except Exception as e:
+                logging.error(f"Error removing duplicate {card_id}: {e}")
+        
+        return {"message": f"Removed {removed_count} duplicate cards", "removed": removed_count}
+    except Exception as e:
+        logging.error(f"Error removing duplicates: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.get("/bin/{bin_number}", response_model=BinInfo)
 async def lookup_bin(bin_number: str):
     """Lookup BIN information using binlist.net free API"""
     try:
-        # Get first 6-8 digits
         bin_clean = bin_number.replace(" ", "").replace("-", "")[:8]
         
         async with httpx.AsyncClient() as client:
