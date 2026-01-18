@@ -215,7 +215,7 @@ async def update_card(card_id: str, card_data: CardUpdate):
 @api_router.delete("/cards/{card_id}")
 async def delete_card(card_id: str):
     try:
-        response = supabase.table('credit_card_transactions').delete().eq('id', card_id).execute()
+        response = get_supabase().table('credit_card_transactions').delete().eq('id', card_id).execute()
         if not response.data:
             raise HTTPException(status_code=404, detail="Card not found")
         return {"message": "Card deleted successfully"}
