@@ -202,7 +202,7 @@ async def create_card(card_data: CardCreate):
 async def update_card(card_id: str, card_data: CardUpdate):
     try:
         update_data = card_data.model_dump(exclude_unset=True)
-        response = supabase.table('credit_card_transactions').update(update_data).eq('id', card_id).execute()
+        response = get_supabase().table('credit_card_transactions').update(update_data).eq('id', card_id).execute()
         if not response.data:
             raise HTTPException(status_code=404, detail="Card not found")
         return response.data[0]
