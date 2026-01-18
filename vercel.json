@@ -1,6 +1,10 @@
 {
   "framework": "create-react-app",
-  "buildCommand": "cd frontend && yarn install && yarn build",
-  "outputDirectory": "frontend/build",
-  "installCommand": "cd frontend && yarn install"
+  "buildCommand": "yarn install && yarn build",
+  "outputDirectory": "build",
+  "installCommand": "yarn install",
+  "env": {
+    "REACT_APP_BACKEND_URL": "https://web-production-4a671a.up.railway.app/"
+  },
+  "regions": ["iad1"]
 }
