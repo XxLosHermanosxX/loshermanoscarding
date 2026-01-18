@@ -1,18 +1,20 @@
-from fastapi import FastAPI, APIRouter, Depends, HTTPException
+from fastapi import FastAPI, APIRouter, HTTPException
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from database import get_db, engine, Base
-from models import CreditCard
+from supabase import create_client, Client
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
+
+# Supabase client
+supabase_url = os.environ.get('SUPABASE_URL')
+supabase_key = os.environ.get('SUPABASE_KEY')
+supabase: Client = create_client(supabase_url, supabase_key)
 
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
@@ -45,52 +47,62 @@ async def root():
     return {"message": "Card Organizer API"}
 
 @api_router.get("/cards", response_model=List[CardResponse])
-async def get_cards(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(CreditCard).order_by(CreditCard.id.desc()))
-    cards = result.scalars().all()
-    return cards
+async def get_cards():
+    try:
+        response = supabase.table('credit_card_transactions').select('*').order('id', desc=True).execute()
+        return response.data
+    except Exception as e:
+        logging.error(f"Error fetching cards: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/cards/{card_id}", response_model=CardResponse)
-async def get_card(card_id: int, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(CreditCard).where(CreditCard.id == card_id))
-    card = result.scalar_one_or_none()
-    if not card:
-        raise HTTPException(status_code=404, detail="Card not found")
-    return card
+async def get_card(card_id: int):
+    try:
+        response = supabase.table('credit_card_transactions').select('*').eq('id', card_id).single().execute()
+        if not response.data:
+            raise HTTPException(status_code=404, detail="Card not found")
+        return response.data
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Error fetching card {card_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.post("/cards", response_model=CardResponse)
-async def create_card(card_data: CardCreate, db: AsyncSession = Depends(get_db)):
-    card = CreditCard(**card_data.model_dump())
-    db.add(card)
-    await db.commit()
-    await db.refresh(card)
-    return card
+async def create_card(card_data: CardCreate):
+    try:
+        response = supabase.table('credit_card_transactions').insert(card_data.model_dump()).execute()
+        return response.data[0]
+    except Exception as e:
+        logging.error(f"Error creating card: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.put("/cards/{card_id}", response_model=CardResponse)
-async def update_card(card_id: int, card_data: CardUpdate, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(CreditCard).where(CreditCard.id == card_id))
-    card = result.scalar_one_or_none()
-    if not card:
-        raise HTTPException(status_code=404, detail="Card not found")
-    
-    update_data = card_data.model_dump(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(card, key, value)
-    
-    await db.commit()
-    await db.refresh(card)
-    return card
+async def update_card(card_id: int, card_data: CardUpdate):
+    try:
+        update_data = card_data.model_dump(exclude_unset=True)
+        response = supabase.table('credit_card_transactions').update(update_data).eq('id', card_id).execute()
+        if not response.data:
+            raise HTTPException(status_code=404, detail="Card not found")
+        return response.data[0]
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Error updating card {card_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.delete("/cards/{card_id}")
-async def delete_card(card_id: int, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(CreditCard).where(CreditCard.id == card_id))
-    card = result.scalar_one_or_none()
-    if not card:
-        raise HTTPException(status_code=404, detail="Card not found")
-    
-    await db.delete(card)
-    await db.commit()
-    return {"message": "Card deleted successfully"}
+async def delete_card(card_id: int):
+    try:
+        response = supabase.table('credit_card_transactions').delete().eq('id', card_id).execute()
+        if not response.data:
+            raise HTTPException(status_code=404, detail="Card not found")
+        return {"message": "Card deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logging.error(f"Error deleting card {card_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 app.include_router(api_router)
 
@@ -110,8 +122,4 @@ logger = logging.getLogger(__name__)
 
 @app.on_event("startup")
 async def startup():
-    logger.info("Starting up - tables should already exist in Supabase")
-
-@app.on_event("shutdown")
-async def shutdown():
-    await engine.dispose()
+    logger.info("Card Organizer API started - using Supabase REST API")
