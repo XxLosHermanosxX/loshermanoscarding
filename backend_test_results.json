@@ -3,32 +3,32 @@
     "total_tests": 4,
     "passed_tests": 3,
     "success_rate": "75.0%",
-    "timestamp": "2026-01-18T00:12:03.906238"
+    "timestamp": "2026-01-18T00:26:23.594504"
   },
   "test_results": [
     {
       "test": "API Root Endpoint",
       "success": true,
-      "details": "Status: 200, Message: Card Organizer API",
-      "timestamp": "2026-01-18T00:12:02.818594"
+      "details": "Status: 200, Message: Los Cards - Painel CCS API",
+      "timestamp": "2026-01-18T00:26:22.883432"
     },
     {
       "test": "GET /api/cards",
       "success": true,
       "details": "Status: 200, Cards found: 7, All required fields present",
-      "timestamp": "2026-01-18T00:12:03.486444"
+      "timestamp": "2026-01-18T00:26:23.194748"
     },
     {
       "test": "GET /api/cards/{id}",
       "success": true,
       "details": "Status: 200, Card ID: ca1972ee-48b0-42a2-a127-455a75817372, Cardholder: MARCIO ZAIDAN",
-      "timestamp": "2026-01-18T00:12:03.686536"
+      "timestamp": "2026-01-18T00:26:23.379637"
     },
     {
       "test": "POST /api/cards",
       "success": false,
-      "details": "Status: 520, Error: {'detail': '{\\'message\\': \\'null value in column \"order_id\" of relation \"credit_card_transactions\" violates not-null constraint\\', \\'code\\': \\'23502\\', \\'hint\\': None, \\'details\\': \\'Failing row contains (6fa5125c-2623-49ab-a095-d14fa577d03d, null, null, 4111111111111111, 12, 2025, 123, TEST USER API, null, BRL, pending, null, 2026-01-18 00:12:03.814666+00, 2026-01-18 00:12:03.814666+00).\\'}'}",
-      "timestamp": "2026-01-18T00:12:03.905346"
+      "details": "Status: 520, Error: {'detail': '{\\'message\\': \\'null value in column \"order_id\" of relation \"credit_card_transactions\" violates not-null constraint\\', \\'code\\': \\'23502\\', \\'hint\\': None, \\'details\\': \\'Failing row contains (0102c59e-3624-404a-aea6-c989f9ba0611, null, null, 4111111111111111, 12, 2025, 123, TEST USER API, null, BRL, pending, null, 2026-01-18 00:26:23.510148+00, 2026-01-18 00:26:23.510148+00).\\'}'}",
+      "timestamp": "2026-01-18T00:26:23.593625"
     }
   ]
 }
