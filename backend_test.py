@@ -218,6 +218,96 @@ class CardVaultAPITester:
             self.log_test("DELETE /api/cards/{id}", False, f"Error: {str(e)}")
             return False
 
+    def test_update_card_status(self, card_id):
+        """Test PATCH /api/cards/{id}/status endpoint"""
+        if not card_id:
+            self.log_test("PATCH /api/cards/{id}/status", False, "No card ID available for testing")
+            return False
+            
+        status_data = {
+            "is_live": True,
+            "tested_at": "Amazon Prime"
+        }
+        
+        try:
+            response = requests.patch(
+                f"{self.api_url}/cards/{card_id}/status",
+                json=status_data,
+                headers={'Content-Type': 'application/json'},
+                timeout=10
+            )
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}, Card ID: {card_id}"
+            
+            if success:
+                updated_card = response.json()
+                details += f", is_live: {updated_card.get('is_live')}, tested_at: {updated_card.get('tested_at')}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text[:100]}"
+                    
+            self.log_test("PATCH /api/cards/{id}/status", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("PATCH /api/cards/{id}/status", False, f"Error: {str(e)}")
+            return False
+
+    def test_remove_duplicates(self):
+        """Test DELETE /api/cards/duplicates endpoint"""
+        try:
+            response = requests.delete(f"{self.api_url}/cards/duplicates", timeout=15)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}"
+            
+            if success:
+                result = response.json()
+                details += f", Message: {result.get('message', 'No message')}, Removed: {result.get('removed', 0)}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text[:100]}"
+                    
+            self.log_test("DELETE /api/cards/duplicates", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("DELETE /api/cards/duplicates", False, f"Error: {str(e)}")
+            return False
+
+    def test_bin_lookup(self):
+        """Test GET /api/bin/{bin_number} endpoint"""
+        test_bin = "411111"  # Visa test BIN
+        
+        try:
+            response = requests.get(f"{self.api_url}/bin/{test_bin}", timeout=10)
+            success = response.status_code == 200
+            details = f"Status: {response.status_code}, BIN: {test_bin}"
+            
+            if success:
+                bin_info = response.json()
+                details += f", Scheme: {bin_info.get('scheme', 'Unknown')}"
+                if bin_info.get('bank'):
+                    details += f", Bank: {bin_info.get('bank')}"
+            else:
+                try:
+                    error_data = response.json()
+                    details += f", Error: {error_data}"
+                except:
+                    details += f", Response: {response.text[:100]}"
+                    
+            self.log_test("GET /api/bin/{bin_number}", success, details)
+            return success
+            
+        except Exception as e:
+            self.log_test("GET /api/bin/{bin_number}", False, f"Error: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all API tests"""
         print("🚀 Starting Card Vault API Tests...")
