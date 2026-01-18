@@ -10,6 +10,16 @@ import { toast } from "sonner";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Local storage helper
+const getLocalStatus = (cardId) => {
+  try {
+    const stored = localStorage.getItem(`card_status_${cardId}`);
+    return stored ? JSON.parse(stored) : { is_live: null, tested_at: '' };
+  } catch {
+    return { is_live: null, tested_at: '' };
+  }
+};
+
 function App() {
   const [cards, setCards] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -21,7 +31,16 @@ function App() {
     setIsLoading(true);
     try {
       const response = await axios.get(`${API}/cards`);
-      setCards(response.data);
+      // Merge with local status
+      const cardsWithStatus = response.data.map(card => {
+        const localStatus = getLocalStatus(card.id);
+        return {
+          ...card,
+          is_live: card.is_live ?? localStatus.is_live,
+          tested_at: card.tested_at || localStatus.tested_at
+        };
+      });
+      setCards(cardsWithStatus);
     } catch (error) {
       console.error("Error fetching cards:", error);
       toast.error("Erro ao carregar cartões");

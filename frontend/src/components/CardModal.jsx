@@ -8,6 +8,24 @@ import axios from 'axios';
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Local storage helper for card status (until Supabase columns are added)
+const getLocalStatus = (cardId) => {
+  try {
+    const stored = localStorage.getItem(`card_status_${cardId}`);
+    return stored ? JSON.parse(stored) : { is_live: null, tested_at: '' };
+  } catch {
+    return { is_live: null, tested_at: '' };
+  }
+};
+
+const setLocalStatus = (cardId, status) => {
+  try {
+    localStorage.setItem(`card_status_${cardId}`, JSON.stringify(status));
+  } catch (e) {
+    console.error('Error saving to localStorage:', e);
+  }
+};
+
 const CardModal = ({ card, isOpen, onClose, onStatusUpdate }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [copiedField, setCopiedField] = useState(null);
@@ -19,8 +37,11 @@ const CardModal = ({ card, isOpen, onClose, onStatusUpdate }) => {
 
   useEffect(() => {
     if (card && isOpen) {
-      setIsLive(card.is_live ?? null);
-      setTestedAt(card.tested_at || '');
+      // Try to get from card first, then from localStorage
+      const localStatus = getLocalStatus(card.id);
+      setIsLive(card.is_live ?? localStatus.is_live ?? null);
+      setTestedAt(card.tested_at || localStatus.tested_at || '');
+      
       if (card.card_number) {
         fetchBinInfo(card.card_number);
       }
@@ -67,7 +88,9 @@ const CardModal = ({ card, isOpen, onClose, onStatusUpdate }) => {
       textArea.value = text;
       textArea.style.position = 'fixed';
       textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
       document.body.appendChild(textArea);
+      textArea.focus();
       textArea.select();
       try {
         document.execCommand('copy');
@@ -112,21 +135,28 @@ const CardModal = ({ card, isOpen, onClose, onStatusUpdate }) => {
   const saveStatus = async () => {
     if (!card) return;
     setSaving(true);
+    
+    const statusData = { is_live: isLive, tested_at: testedAt };
+    
     try {
-      await axios.patch(`${API}/cards/${card.id}/status`, {
-        is_live: isLive,
-        tested_at: testedAt
-      });
-      toast.success('Status salvo!');
-      if (onStatusUpdate) {
-        onStatusUpdate(card.id, { is_live: isLive, tested_at: testedAt });
-      }
+      // Try to save to Supabase first
+      await axios.patch(`${API}/cards/${card.id}/status`, statusData);
+      toast.success('Status salvo no servidor!');
     } catch (error) {
-      console.error('Error saving status:', error);
-      toast.error('Erro ao salvar status');
-    } finally {
-      setSaving(false);
+      // If Supabase fails (columns don't exist), save locally
+      console.log('Saving locally (Supabase columns not found)');
+      setLocalStatus(card.id, statusData);
+      toast.success('Status salvo localmente!', { 
+        description: 'Adicione as colunas is_live e tested_at no Supabase para salvar no servidor' 
+      });
     }
+    
+    // Update parent component
+    if (onStatusUpdate) {
+      onStatusUpdate(card.id, statusData);
+    }
+    
+    setSaving(false);
   };
 
   return (
@@ -159,7 +189,7 @@ const CardModal = ({ card, isOpen, onClose, onStatusUpdate }) => {
           <div className="flex gap-2 mb-3">
             <button
               onClick={() => setIsLive(true)}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded border transition-all ${
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded border transition-all active:scale-95 ${
                 isLive === true 
                   ? 'bg-green-500/20 border-green-500 text-green-400' 
                   : 'border-white/20 text-white/50 hover:border-green-500/50'
@@ -171,7 +201,7 @@ const CardModal = ({ card, isOpen, onClose, onStatusUpdate }) => {
             </button>
             <button
               onClick={() => setIsLive(false)}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded border transition-all ${
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded border transition-all active:scale-95 ${
                 isLive === false 
                   ? 'bg-red-500/20 border-red-500 text-red-400' 
                   : 'border-white/20 text-white/50 hover:border-red-500/50'
@@ -189,14 +219,14 @@ const CardModal = ({ card, isOpen, onClose, onStatusUpdate }) => {
               value={testedAt}
               onChange={(e) => setTestedAt(e.target.value)}
               placeholder="Ex: Amazon, Netflix, Spotify..."
-              className="w-full bg-cyber-black/50 border border-white/20 rounded px-3 py-2 text-sm text-white font-mono placeholder:text-white/30 focus:border-neon-cyan focus:outline-none"
+              className="w-full bg-cyber-black/50 border border-white/20 rounded px-3 py-2.5 text-sm text-white font-mono placeholder:text-white/30 focus:border-neon-cyan focus:outline-none"
               data-testid="tested-at-input"
             />
           </div>
           <button
             onClick={saveStatus}
             disabled={saving}
-            className="w-full mt-3 flex items-center justify-center gap-2 py-2 bg-neon-yellow/20 border border-neon-yellow text-neon-yellow font-orbitron text-xs uppercase tracking-widest hover:bg-neon-yellow hover:text-black transition-all rounded disabled:opacity-50"
+            className="w-full mt-3 flex items-center justify-center gap-2 py-2.5 bg-neon-yellow/20 border border-neon-yellow text-neon-yellow font-orbitron text-xs uppercase tracking-widest hover:bg-neon-yellow hover:text-black transition-all rounded disabled:opacity-50 active:scale-[0.98]"
             data-testid="save-status-btn"
           >
             <Save className="w-4 h-4" />
@@ -289,7 +319,7 @@ const CardModal = ({ card, isOpen, onClose, onStatusUpdate }) => {
         <div className="grid grid-cols-2 gap-2 pb-2">
           <button
             onClick={() => setIsFlipped(!isFlipped)}
-            className="btn-cyber py-2.5 border border-neon-cyan text-neon-cyan font-orbitron text-xs uppercase tracking-widest hover:bg-neon-cyan hover:text-black transition-all rounded"
+            className="btn-cyber py-2.5 border border-neon-cyan text-neon-cyan font-orbitron text-xs uppercase tracking-widest hover:bg-neon-cyan hover:text-black transition-all rounded active:scale-[0.98]"
             data-testid="flip-card-btn"
           >
             {isFlipped ? 'Ver Frente' : 'Ver CVV'}
@@ -297,7 +327,7 @@ const CardModal = ({ card, isOpen, onClose, onStatusUpdate }) => {
           
           <button
             onClick={copyAll}
-            className="btn-cyber py-2.5 border border-neon-pink text-neon-pink font-orbitron text-xs uppercase tracking-widest hover:bg-neon-pink hover:text-black transition-all rounded flex items-center justify-center gap-2"
+            className="btn-cyber py-2.5 border border-neon-pink text-neon-pink font-orbitron text-xs uppercase tracking-widest hover:bg-neon-pink hover:text-black transition-all rounded flex items-center justify-center gap-2 active:scale-[0.98]"
             data-testid="copy-all-btn"
           >
             <Copy className="w-4 h-4" />
