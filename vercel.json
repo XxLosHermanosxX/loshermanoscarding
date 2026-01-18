@@ -3,7 +3,5 @@
   "buildCommand": "cd frontend && yarn install && yarn build",
   "outputDirectory": "frontend/build",
   "installCommand": "cd frontend && yarn install",
-  "env": {
-    "REACT_APP_BACKEND_URL": "@backend_url"
-  }
+ }
 }
