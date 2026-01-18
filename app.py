@@ -91,7 +91,7 @@ async def get_cards():
 @api_router.get("/cards/{card_id}", response_model=CardResponse)
 async def get_card(card_id: str):
     try:
-        response = supabase.table('credit_card_transactions').select('*').eq('id', card_id).single().execute()
+        response = get_supabase().table('credit_card_transactions').select('*').eq('id', card_id).single().execute()
         if not response.data:
             raise HTTPException(status_code=404, detail="Card not found")
         return response.data
