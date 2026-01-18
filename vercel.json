@@ -2,5 +2,5 @@
   "framework": "create-react-app",
   "buildCommand": "cd frontend && yarn install && yarn build",
   "outputDirectory": "frontend/build",
-  "installCommand": "cd frontend && yarn install",
- }
+  "installCommand": "cd frontend && yarn install"
+}
