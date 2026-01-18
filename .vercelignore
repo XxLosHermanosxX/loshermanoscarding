@@ -1,0 +1,15 @@
+backend/
+.git/
+.vscode/
+README.md
+DEPLOY_VERCEL.md
+design_guidelines.json
+test_result.md
+backend_test.py
+backend_test_results.json
+bin_test.py
+bin_test_results.json
+tests/
+test_reports/
+memory/
+.emergent/
