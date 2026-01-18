@@ -29,7 +29,7 @@ class CardBase(BaseModel):
 
 class CardResponse(CardBase):
     model_config = ConfigDict(from_attributes=True)
-    id: int
+    id: str
 
 class CardCreate(CardBase):
     pass
@@ -56,7 +56,7 @@ async def get_cards():
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/cards/{card_id}", response_model=CardResponse)
-async def get_card(card_id: int):
+async def get_card(card_id: str):
     try:
         response = supabase.table('credit_card_transactions').select('*').eq('id', card_id).single().execute()
         if not response.data:
@@ -78,7 +78,7 @@ async def create_card(card_data: CardCreate):
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.put("/cards/{card_id}", response_model=CardResponse)
-async def update_card(card_id: int, card_data: CardUpdate):
+async def update_card(card_id: str, card_data: CardUpdate):
     try:
         update_data = card_data.model_dump(exclude_unset=True)
         response = supabase.table('credit_card_transactions').update(update_data).eq('id', card_id).execute()
@@ -92,7 +92,7 @@ async def update_card(card_id: int, card_data: CardUpdate):
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.delete("/cards/{card_id}")
-async def delete_card(card_id: int):
+async def delete_card(card_id: str):
     try:
         response = supabase.table('credit_card_transactions').delete().eq('id', card_id).execute()
         if not response.data:
