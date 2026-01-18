@@ -18,10 +18,19 @@ else:
     # Se não existir .env, carregar do ambiente
     load_dotenv()
 
-# Supabase client
-supabase_url = os.environ.get('SUPABASE_URL')
-supabase_key = os.environ.get('SUPABASE_KEY')
-supabase: Client = create_client(supabase_url, supabase_key)
+# Supabase client - lazy initialization
+supabase: Client = None
+
+def get_supabase() -> Client:
+    """Get or create Supabase client"""
+    global supabase
+    if supabase is None:
+        supabase_url = os.environ.get('SUPABASE_URL')
+        supabase_key = os.environ.get('SUPABASE_KEY')
+        if not supabase_url or not supabase_key:
+            raise HTTPException(status_code=500, detail="Supabase credentials not configured")
+        supabase = create_client(supabase_url, supabase_key)
+    return supabase
 
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
