@@ -1,34 +1,46 @@
 {
   "summary": {
-    "total_tests": 4,
-    "passed_tests": 3,
-    "success_rate": "75.0%",
-    "timestamp": "2026-01-18T00:26:23.594504"
+    "total_tests": 6,
+    "passed_tests": 5,
+    "success_rate": "83.3%",
+    "timestamp": "2026-01-18T03:55:09.185873"
   },
   "test_results": [
     {
       "test": "API Root Endpoint",
       "success": true,
       "details": "Status: 200, Message: Los Cards - Painel CCS API",
-      "timestamp": "2026-01-18T00:26:22.883432"
+      "timestamp": "2026-01-18T03:55:07.483274"
     },
     {
       "test": "GET /api/cards",
       "success": true,
       "details": "Status: 200, Cards found: 7, All required fields present",
-      "timestamp": "2026-01-18T00:26:23.194748"
+      "timestamp": "2026-01-18T03:55:07.883421"
     },
     {
       "test": "GET /api/cards/{id}",
       "success": true,
       "details": "Status: 200, Card ID: ca1972ee-48b0-42a2-a127-455a75817372, Cardholder: MARCIO ZAIDAN",
-      "timestamp": "2026-01-18T00:26:23.379637"
+      "timestamp": "2026-01-18T03:55:08.089933"
     },
     {
       "test": "POST /api/cards",
       "success": false,
-      "details": "Status: 520, Error: {'detail': '{\\'message\\': \\'null value in column \"order_id\" of relation \"credit_card_transactions\" violates not-null constraint\\', \\'code\\': \\'23502\\', \\'hint\\': None, \\'details\\': \\'Failing row contains (0102c59e-3624-404a-aea6-c989f9ba0611, null, null, 4111111111111111, 12, 2025, 123, TEST USER API, null, BRL, pending, null, 2026-01-18 00:26:23.510148+00, 2026-01-18 00:26:23.510148+00).\\'}'}",
-      "timestamp": "2026-01-18T00:26:23.593625"
+      "details": "Status: 520, Error: {'detail': '{\\'message\\': \\'null value in column \"order_id\" of relation \"credit_card_transactions\" violates not-null constraint\\', \\'code\\': \\'23502\\', \\'hint\\': None, \\'details\\': \\'Failing row contains (74104454-c6c1-4d7f-bf8d-a1782295ecc9, null, null, 4111111111111111, 12, 2025, 123, TEST USER API, null, BRL, pending, null, 2026-01-18 03:55:08.242152+00, 2026-01-18 03:55:08.242152+00).\\'}'}",
+      "timestamp": "2026-01-18T03:55:08.356681"
+    },
+    {
+      "test": "DELETE /api/cards/duplicates",
+      "success": true,
+      "details": "Status: 200, Message: Removed 2 duplicate cards, Removed: 2",
+      "timestamp": "2026-01-18T03:55:08.889649"
+    },
+    {
+      "test": "GET /api/bin/{bin_number}",
+      "success": true,
+      "details": "Status: 200, BIN: 411111, Scheme: visa, Bank: Conotoxia Sp. Z O.O",
+      "timestamp": "2026-01-18T03:55:09.184928"
     }
   ]
 }
