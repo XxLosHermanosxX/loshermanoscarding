@@ -123,8 +123,9 @@ async def update_card_status(card_id: str, status: CardStatusUpdate):
 async def remove_duplicates():
     """Remove duplicate cards based on card_number"""
     try:
+        db = get_supabase()
         # Get all cards
-        response = supabase.table('credit_card_transactions').select('*').execute()
+        response = db.table('credit_card_transactions').select('*').execute()
         cards = response.data
         
         if not cards:
@@ -145,7 +146,7 @@ async def remove_duplicates():
         removed_count = 0
         for card_id in duplicates_to_remove:
             try:
-                supabase.table('credit_card_transactions').delete().eq('id', card_id).execute()
+                db.table('credit_card_transactions').delete().eq('id', card_id).execute()
                 removed_count += 1
             except Exception as e:
                 logging.error(f"Error removing duplicate {card_id}: {e}")
