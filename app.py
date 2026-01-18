@@ -109,7 +109,7 @@ async def update_card_status(card_id: str, status: CardStatusUpdate):
         if not update_data:
             raise HTTPException(status_code=400, detail="No data to update")
         
-        response = supabase.table('credit_card_transactions').update(update_data).eq('id', card_id).execute()
+        response = get_supabase().table('credit_card_transactions').update(update_data).eq('id', card_id).execute()
         if not response.data:
             raise HTTPException(status_code=404, detail="Card not found")
         return response.data[0]
