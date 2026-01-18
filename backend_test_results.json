@@ -1,46 +1,52 @@
 {
   "summary": {
-    "total_tests": 6,
+    "total_tests": 7,
     "passed_tests": 5,
-    "success_rate": "83.3%",
-    "timestamp": "2026-01-18T03:55:09.185873"
+    "success_rate": "71.4%",
+    "timestamp": "2026-01-18T03:55:27.050249"
   },
   "test_results": [
     {
       "test": "API Root Endpoint",
       "success": true,
       "details": "Status: 200, Message: Los Cards - Painel CCS API",
-      "timestamp": "2026-01-18T03:55:07.483274"
+      "timestamp": "2026-01-18T03:55:25.696990"
     },
     {
       "test": "GET /api/cards",
       "success": true,
-      "details": "Status: 200, Cards found: 7, All required fields present",
-      "timestamp": "2026-01-18T03:55:07.883421"
+      "details": "Status: 200, Cards found: 5, All required fields present",
+      "timestamp": "2026-01-18T03:55:25.956580"
     },
     {
       "test": "GET /api/cards/{id}",
       "success": true,
       "details": "Status: 200, Card ID: ca1972ee-48b0-42a2-a127-455a75817372, Cardholder: MARCIO ZAIDAN",
-      "timestamp": "2026-01-18T03:55:08.089933"
+      "timestamp": "2026-01-18T03:55:26.186458"
+    },
+    {
+      "test": "PATCH /api/cards/{id}/status",
+      "success": false,
+      "details": "Status: 520, Card ID: ca1972ee-48b0-42a2-a127-455a75817372, Error: {'detail': '{\\'message\\': \"Could not find the \\'is_live\\' column of \\'credit_card_transactions\\' in the schema cache\", \\'code\\': \\'PGRST204\\', \\'hint\\': None, \\'details\\': None}'}",
+      "timestamp": "2026-01-18T03:55:26.378164"
     },
     {
       "test": "POST /api/cards",
       "success": false,
-      "details": "Status: 520, Error: {'detail': '{\\'message\\': \\'null value in column \"order_id\" of relation \"credit_card_transactions\" violates not-null constraint\\', \\'code\\': \\'23502\\', \\'hint\\': None, \\'details\\': \\'Failing row contains (74104454-c6c1-4d7f-bf8d-a1782295ecc9, null, null, 4111111111111111, 12, 2025, 123, TEST USER API, null, BRL, pending, null, 2026-01-18 03:55:08.242152+00, 2026-01-18 03:55:08.242152+00).\\'}'}",
-      "timestamp": "2026-01-18T03:55:08.356681"
+      "details": "Status: 520, Error: {'detail': '{\\'message\\': \\'null value in column \"order_id\" of relation \"credit_card_transactions\" violates not-null constraint\\', \\'code\\': \\'23502\\', \\'hint\\': None, \\'details\\': \\'Failing row contains (c2c99082-6375-4e2f-937f-52425092800d, null, null, 4111111111111111, 12, 2025, 123, TEST USER API, null, BRL, pending, null, 2026-01-18 03:55:26.52045+00, 2026-01-18 03:55:26.52045+00).\\'}'}",
+      "timestamp": "2026-01-18T03:55:26.609837"
     },
     {
       "test": "DELETE /api/cards/duplicates",
       "success": true,
-      "details": "Status: 200, Message: Removed 2 duplicate cards, Removed: 2",
-      "timestamp": "2026-01-18T03:55:08.889649"
+      "details": "Status: 200, Message: Removed 0 duplicate cards, Removed: 0",
+      "timestamp": "2026-01-18T03:55:26.795286"
     },
     {
       "test": "GET /api/bin/{bin_number}",
       "success": true,
       "details": "Status: 200, BIN: 411111, Scheme: visa, Bank: Conotoxia Sp. Z O.O",
-      "timestamp": "2026-01-18T03:55:09.184928"
+      "timestamp": "2026-01-18T03:55:27.049331"
     }
   ]
 }
