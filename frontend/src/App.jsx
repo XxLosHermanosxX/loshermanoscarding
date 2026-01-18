@@ -10,6 +10,20 @@ import { toast } from "sonner";
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Skull ASCII art variations
+const SKULL_FRAMES = [
+  "Cards",
+  "C4rd5",
+  "☠",
+  "💀",
+  "C@rd$",
+  "SKULL",
+  "卐₿₿卐",
+  "☠☠☠",
+  "D34D",
+  "Cards"
+];
+
 // Local storage helper
 const getLocalStatus = (cardId) => {
   try {
@@ -18,6 +32,66 @@ const getLocalStatus = (cardId) => {
   } catch {
     return { is_live: null, tested_at: '' };
   }
+};
+
+// Animated Background Component
+const AnimatedBackground = () => (
+  <div className="animated-bg">
+    <div className="orb orb-1"></div>
+    <div className="orb orb-2"></div>
+    <div className="orb orb-3"></div>
+    <div className="orb orb-4"></div>
+  </div>
+);
+
+// Mini 3D Card Component
+const Mini3DCard = () => (
+  <div className="mini-card-container">
+    <div className="mini-card">
+      <div className="mini-card-face mini-card-front">
+        <div className="w-3 h-2 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-sm"></div>
+      </div>
+      <div className="mini-card-face mini-card-back">
+        <div className="w-full h-1 bg-gray-800 mt-1"></div>
+      </div>
+    </div>
+  </div>
+);
+
+// Animated Logo Component
+const AnimatedLogo = () => {
+  const [textIndex, setTextIndex] = useState(0);
+  const [isGlitching, setIsGlitching] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsGlitching(true);
+      setTimeout(() => {
+        setTextIndex((prev) => (prev + 1) % SKULL_FRAMES.length);
+        setIsGlitching(false);
+      }, 150);
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="flex items-center gap-3 md:gap-4">
+      <Mini3DCard />
+      <div>
+        <h1 className="font-orbitron text-base md:text-xl text-white tracking-wider uppercase flex items-center gap-1">
+          Los{" "}
+          <span 
+            className={`text-neon-cyan text-glow-cyan skull-text ${isGlitching ? 'glitch-text' : ''}`}
+            data-text={SKULL_FRAMES[textIndex]}
+          >
+            {SKULL_FRAMES[textIndex]}
+          </span>
+        </h1>
+        <p className="text-[10px] text-white/40 font-mono">Painel CCS</p>
+      </div>
+    </div>
+  );
 };
 
 function App() {
@@ -31,7 +105,6 @@ function App() {
     setIsLoading(true);
     try {
       const response = await axios.get(`${API}/cards`);
-      // Merge with local status
       const cardsWithStatus = response.data.map(card => {
         const localStatus = getLocalStatus(card.id);
         return {
@@ -93,7 +166,13 @@ function App() {
   const duplicateCount = totalCards - new Set(cards.map(c => c.card_number?.replace(/\s/g, ''))).size;
 
   return (
-    <div className="min-h-screen bg-cyber-black scanlines">
+    <div className="min-h-screen relative">
+      {/* Animated Background */}
+      <AnimatedBackground />
+      
+      {/* Scanlines Overlay */}
+      <div className="scanlines" />
+      
       <Toaster 
         position="top-center" 
         toastOptions={{
@@ -106,23 +185,13 @@ function App() {
       />
       
       {/* Header */}
-      <header className="border-b border-white/10 bg-cyber-gray/50 backdrop-blur-sm sticky top-0 z-40">
+      <header className="border-b border-white/10 bg-cyber-gray/70 backdrop-blur-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 md:gap-4">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-neon-cyan/20 to-neon-pink/20 flex items-center justify-center border border-neon-cyan/30 shadow-neon-cyan">
-                <CreditCard className="w-5 h-5 text-neon-cyan" />
-              </div>
-              <div>
-                <h1 className="font-orbitron text-base md:text-xl text-white tracking-wider uppercase">
-                  Los <span className="text-neon-cyan text-glow-cyan">Cards</span>
-                </h1>
-                <p className="text-[10px] text-white/40 font-mono">Painel CCS</p>
-              </div>
-            </div>
+            <AnimatedLogo />
             
             <div className="flex items-center gap-2">
-              <div className="hidden sm:flex items-center gap-2 px-2 py-1 rounded bg-cyber-surface border border-white/10">
+              <div className="hidden sm:flex items-center gap-2 px-2 py-1 rounded bg-cyber-surface/50 border border-white/10">
                 <Database className="w-3 h-3 text-neon-pink" />
                 <span className="text-[10px] font-mono text-white/60">Supabase</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
@@ -131,7 +200,7 @@ function App() {
               <button
                 onClick={fetchCards}
                 disabled={isLoading}
-                className="p-2 border border-neon-cyan/50 text-neon-cyan hover:bg-neon-cyan hover:text-black transition-all rounded disabled:opacity-50"
+                className="p-2 border border-neon-cyan/50 text-neon-cyan hover:bg-neon-cyan hover:text-black transition-all rounded disabled:opacity-50 bg-cyber-black/50"
                 data-testid="refresh-btn"
               >
                 <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
@@ -142,7 +211,7 @@ function App() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-4 md:py-8">
+      <main className="max-w-7xl mx-auto px-4 py-4 md:py-8 relative z-10">
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 mb-4 md:mb-6">
           <div className="glass rounded-lg p-3 md:p-4 border-l-2 border-neon-cyan">
@@ -219,10 +288,10 @@ function App() {
       />
 
       {/* Footer */}
-      <footer className="border-t border-white/10 mt-6">
+      <footer className="border-t border-white/10 mt-6 relative z-10 bg-cyber-black/50 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <p className="text-center text-[10px] text-white/30 font-mono">
-            LOS CARDS // PAINEL CCS // v2.0
+            LOS CARDS // PAINEL CCS // v2.0 // ☠
           </p>
         </div>
       </footer>
