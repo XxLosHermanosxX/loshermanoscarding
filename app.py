@@ -192,7 +192,7 @@ async def lookup_bin(bin_number: str):
 @api_router.post("/cards", response_model=CardResponse)
 async def create_card(card_data: CardCreate):
     try:
-        response = supabase.table('credit_card_transactions').insert(card_data.model_dump()).execute()
+        response = get_supabase().table('credit_card_transactions').insert(card_data.model_dump()).execute()
         return response.data[0]
     except Exception as e:
         logging.error(f"Error creating card: {e}")
