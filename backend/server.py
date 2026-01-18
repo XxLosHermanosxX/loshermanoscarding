@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 import os
 import logging
+import httpx
 from pathlib import Path
 from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
@@ -41,10 +42,19 @@ class CardUpdate(BaseModel):
     cvv: Optional[str] = None
     cardholder_name: Optional[str] = None
 
+class BinInfo(BaseModel):
+    scheme: Optional[str] = None
+    type: Optional[str] = None
+    brand: Optional[str] = None
+    country: Optional[str] = None
+    country_emoji: Optional[str] = None
+    bank: Optional[str] = None
+    prepaid: Optional[bool] = None
+
 # Routes
 @api_router.get("/")
 async def root():
-    return {"message": "Card Organizer API"}
+    return {"message": "Los Cards - Painel CCS API"}
 
 @api_router.get("/cards", response_model=List[CardResponse])
 async def get_cards():
@@ -67,6 +77,40 @@ async def get_card(card_id: str):
     except Exception as e:
         logging.error(f"Error fetching card {card_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/bin/{bin_number}", response_model=BinInfo)
+async def lookup_bin(bin_number: str):
+    """Lookup BIN information using binlist.net free API"""
+    try:
+        # Get first 6-8 digits
+        bin_clean = bin_number.replace(" ", "").replace("-", "")[:8]
+        
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"https://lookup.binlist.net/{bin_clean}",
+                headers={"Accept-Version": "3"},
+                timeout=10.0
+            )
+            
+            if response.status_code == 404:
+                return BinInfo()
+            
+            if response.status_code == 200:
+                data = response.json()
+                return BinInfo(
+                    scheme=data.get("scheme"),
+                    type=data.get("type"),
+                    brand=data.get("brand"),
+                    country=data.get("country", {}).get("name") if data.get("country") else None,
+                    country_emoji=data.get("country", {}).get("emoji") if data.get("country") else None,
+                    bank=data.get("bank", {}).get("name") if data.get("bank") else None,
+                    prepaid=data.get("prepaid")
+                )
+            
+            return BinInfo()
+    except Exception as e:
+        logging.error(f"Error looking up BIN {bin_number}: {e}")
+        return BinInfo()
 
 @api_router.post("/cards", response_model=CardResponse)
 async def create_card(card_data: CardCreate):
@@ -122,4 +166,4 @@ logger = logging.getLogger(__name__)
 
 @app.on_event("startup")
 async def startup():
-    logger.info("Card Organizer API started - using Supabase REST API")
+    logger.info("Los Cards - Painel CCS API started")
