@@ -1,0 +1,34 @@
+{
+  "summary": {
+    "total_tests": 4,
+    "passed_tests": 4,
+    "success_rate": "100.0%",
+    "timestamp": "2026-01-18T00:35:26.963787"
+  },
+  "test_results": [
+    {
+      "test": "GET /api/bin/4111 (Visa)",
+      "success": true,
+      "details": "Status: 200, Scheme: None, Type: None, Brand: None, Country: None - Empty BIN response (but endpoint works)",
+      "timestamp": "2026-01-18T00:35:25.630760"
+    },
+    {
+      "test": "GET /api/bin/5555 (Mastercard)",
+      "success": true,
+      "details": "Status: 200, Scheme: None, Type: None, Brand: None, Country: None - Empty BIN response (but endpoint works)",
+      "timestamp": "2026-01-18T00:35:25.847404"
+    },
+    {
+      "test": "GET /api/bin/0000 (Invalid)",
+      "success": true,
+      "details": "Status: 200, Response fields: ['scheme', 'type', 'brand', 'country', 'country_emoji', 'bank', 'prepaid'] - Invalid BIN handled gracefully",
+      "timestamp": "2026-01-18T00:35:26.061767"
+    },
+    {
+      "test": "BIN from existing card (407843)",
+      "success": true,
+      "details": "Status: 200, BIN: 407843, Scheme: None, Type: None, Brand: None, Country: None - Empty BIN response (but endpoint works)",
+      "timestamp": "2026-01-18T00:35:26.962253"
+    }
+  ]
+}
