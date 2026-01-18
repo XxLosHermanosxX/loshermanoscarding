@@ -1,72 +1,97 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, Depends, HTTPException
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
-from typing import List
-import uuid
-from datetime import datetime, timezone
-
+from typing import List, Optional
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from database import get_db, engine, Base
+from models import CreditCard
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
-
-# Create the main app without a prefix
 app = FastAPI()
-
-# Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
+# Pydantic schemas
+class CardBase(BaseModel):
+    card_number: str
+    expiry_month: str
+    expiry_year: str
+    cvv: str
+    cardholder_name: str
 
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
-    
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+class CardResponse(CardBase):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
+class CardCreate(CardBase):
+    pass
 
-# Add your routes to the router instead of directly to app
+class CardUpdate(BaseModel):
+    card_number: Optional[str] = None
+    expiry_month: Optional[str] = None
+    expiry_year: Optional[str] = None
+    cvv: Optional[str] = None
+    cardholder_name: Optional[str] = None
+
+# Routes
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Card Organizer API"}
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
-    
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
-    
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
+@api_router.get("/cards", response_model=List[CardResponse])
+async def get_cards(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(CreditCard).order_by(CreditCard.id.desc()))
+    cards = result.scalars().all()
+    return cards
 
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
-    
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
-    
-    return status_checks
+@api_router.get("/cards/{card_id}", response_model=CardResponse)
+async def get_card(card_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(CreditCard).where(CreditCard.id == card_id))
+    card = result.scalar_one_or_none()
+    if not card:
+        raise HTTPException(status_code=404, detail="Card not found")
+    return card
 
-# Include the router in the main app
+@api_router.post("/cards", response_model=CardResponse)
+async def create_card(card_data: CardCreate, db: AsyncSession = Depends(get_db)):
+    card = CreditCard(**card_data.model_dump())
+    db.add(card)
+    await db.commit()
+    await db.refresh(card)
+    return card
+
+@api_router.put("/cards/{card_id}", response_model=CardResponse)
+async def update_card(card_id: int, card_data: CardUpdate, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(CreditCard).where(CreditCard.id == card_id))
+    card = result.scalar_one_or_none()
+    if not card:
+        raise HTTPException(status_code=404, detail="Card not found")
+    
+    update_data = card_data.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(card, key, value)
+    
+    await db.commit()
+    await db.refresh(card)
+    return card
+
+@api_router.delete("/cards/{card_id}")
+async def delete_card(card_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(CreditCard).where(CreditCard.id == card_id))
+    card = result.scalar_one_or_none()
+    if not card:
+        raise HTTPException(status_code=404, detail="Card not found")
+    
+    await db.delete(card)
+    await db.commit()
+    return {"message": "Card deleted successfully"}
+
 app.include_router(api_router)
 
 app.add_middleware(
@@ -77,13 +102,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
+@app.on_event("startup")
+async def startup():
+    logger.info("Starting up - tables should already exist in Supabase")
+
 @app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()
+async def shutdown():
+    await engine.dispose()
