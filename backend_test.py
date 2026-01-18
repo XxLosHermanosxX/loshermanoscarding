@@ -334,7 +334,13 @@ class CardVaultAPITester:
             # Test update and delete with created card
             if hasattr(self, 'created_card_id'):
                 self.test_update_card(self.created_card_id)
+                # Test new status update endpoint
+                self.test_update_card_status(self.created_card_id)
                 self.test_delete_card(self.created_card_id)
+        
+        # Test new endpoints
+        self.test_remove_duplicates()
+        self.test_bin_lookup()
         
         print("=" * 60)
         print(f"📊 Test Results: {self.tests_passed}/{self.tests_run} passed")
