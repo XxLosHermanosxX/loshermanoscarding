@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 import { X } from 'lucide-react';
 import CreditCard3D from './CreditCard3D';
 
@@ -21,6 +21,9 @@ const CardModal = ({ card, isOpen, onClose }) => {
           <DialogTitle className="font-orbitron text-neon-cyan text-xl tracking-widest uppercase text-center">
             {card?.cardholder_name || 'Cartão'}
           </DialogTitle>
+          <DialogDescription className="text-white/40 text-center text-sm font-mono">
+            Clique no cartão ou no botão para ver o verso
+          </DialogDescription>
         </DialogHeader>
         
         <div className="py-8">
