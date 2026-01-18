@@ -82,7 +82,7 @@ async def root():
 @api_router.get("/cards", response_model=List[CardResponse])
 async def get_cards():
     try:
-        response = supabase.table('credit_card_transactions').select('*').order('id', desc=True).execute()
+        response = get_supabase().table('credit_card_transactions').select('*').order('id', desc=True).execute()
         return response.data
     except Exception as e:
         logging.error(f"Error fetching cards: {e}")
