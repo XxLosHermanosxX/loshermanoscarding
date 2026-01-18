@@ -328,6 +328,8 @@ class CardVaultAPITester:
         # Test single card retrieval if cards exist
         if hasattr(self, 'test_card_id') and self.test_card_id:
             self.test_get_single_card(self.test_card_id)
+            # Test status update with existing card
+            self.test_update_card_status(self.test_card_id)
         
         # Test CRUD operations
         if self.test_create_card():
